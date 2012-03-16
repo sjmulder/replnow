@@ -1,6 +1,16 @@
 #!/usr/bin/php
 <?php
 
+class DebugSoapClient extends SoapClient
+{
+    function __doRequest($request, $location, $action, $version, $one_way = null)
+    {
+        if ($one_way === null) $one_way = 1;
+        print_r($request);
+        return parent::__doRequest($request, $location, $action, $version, $one_way);
+    }
+}
+
 class QueryMsg
 {
     public $Query;
@@ -19,6 +29,7 @@ define('VERSION',       '0.1');
 define('DECRIPTIOM',    'A REPL for the RightNow query language');
 define('WSDL_FORMAT',   'https://%s/cgi-bin/%s.cfg/services/soap?wsdl=typed');
 define('QUIT_COMMANDS', 'q quit exit stop');
+define('WSSE_NS',       'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd');
 
 $cmdline = new Console_CommandLine();
 $cmdline->description = DESCRIPTION;
@@ -82,11 +93,20 @@ if (function_exists('ncurses_echo')) ncurses_echo();
 $wsdl_url = sprintf(WSDL_FORMAT, urlencode($host), urlencode($interface));
 
 try {
-    $client = new SoapClient($wsdl_url, array('trace' => 1));
+    $client = new DebugSoapClient($wsdl_url, array('trace' => 1));
 } catch (SoapFault $e) {
     fprintf(STDERR, $e->getMessage() . "\n");
     exit(1);
 }
+
+$token = new stdClass();
+$token->Username = new SoapVar($username, XSD_STRING, null, null, null, WSSE_NS);
+$token->Password = new SoapVar($password, XSD_STRING, null, null, null, WSSE_NS);
+$security = new stdClass();
+$security->UsernameToken
+              = new SoapVar($token,     SOAP_ENC_OBJECT, null, null, null, WSSE_NS);
+$security_var = new SoapVar($token_var, SOAP_ENC_OBJECT, null, null, null, WSSE_NS);
+$client->__setSoapHeaders(new SoapHeader(WSSE_NS, 'Security', $security, 1));
 
 while (true) {
     printf("\n");
