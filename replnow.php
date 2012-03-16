@@ -82,7 +82,7 @@ if (function_exists('ncurses_echo')) ncurses_echo();
 $wsdl_url = sprintf(WSDL_FORMAT, urlencode($host), urlencode($interface));
 
 try {
-    $client = new SoapClient($wsdl_url);
+    $client = new SoapClient($wsdl_url, array('trace' => 1));
 } catch (SoapFault $e) {
     fprintf(STDERR, $e->getMessage() . "\n");
     exit(1);
@@ -102,7 +102,8 @@ while (true) {
         $result = $client->QueryCSV(new QueryMsg($cmd));
         print_r($result);
     } catch (SoapFault $e) {
-        printf($e->getMessage() . "\n");
+        print_r($e);
+        print_r($client->__getLastResponse());
     }
 }
 
