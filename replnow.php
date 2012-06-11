@@ -105,10 +105,7 @@ $header_xml = '
     SOAP-ENV:mustUnderstand="1">
     <wsse:UsernameToken>
         <wsse:Username>' . $username . '</wsse:Username>
-        <wsse:Password 
-            Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">
-                ' . $password . '
-        </wsse:Password>
+        <wsse:Password>' . $password . '</wsse:Password>
     </wsse:UsernameToken>
 </wsse:Security>';
 
