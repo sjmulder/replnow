@@ -27,7 +27,7 @@ class QueryMsg
 require_once 'Console/CommandLine.php';
 
 define('VERSION',       '0.1');
-define('DECRIPTIOM',    'A REPL for the RightNow query language');
+define('DESCRIPTION',   'A REPL for the RightNow query language');
 define('WSDL_FORMAT',   'https://%s/cgi-bin/%s.cfg/services/soap?wsdl=typed');
 define('QUIT_COMMANDS', 'q quit exit stop');
 define('WSSE_NS',       'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd');
