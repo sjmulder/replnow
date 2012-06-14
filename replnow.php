@@ -27,10 +27,12 @@ class QueryMsg
 require_once 'Console/CommandLine.php';
 
 define('VERSION',       '0.1');
+define('APP_ID',        'replnow');
 define('DESCRIPTION',   'A REPL for the RightNow query language');
 define('WSDL_FORMAT',   'https://%s/cgi-bin/%s.cfg/services/soap?wsdl=typed');
 define('QUIT_COMMANDS', 'q quit exit stop');
 define('WSSE_NS',       'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd');
+define('RIGHTNOW_NS',   'urn:messages.ws.rightnow.com/v1');
 
 $cmdline = new Console_CommandLine();
 $cmdline->description = DESCRIPTION;
@@ -100,18 +102,23 @@ try {
     exit(1);
 }
 
-$header_xml = '
-<wsse:Security
-    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
-    SOAP-ENV:mustUnderstand="1">
-    <wsse:UsernameToken>
-        <wsse:Username>' . $username . '</wsse:Username>
-        <wsse:Password>' . $password . '</wsse:Password>
-    </wsse:UsernameToken>
-</wsse:Security>';
+$security_xml = '
+<hns1:Security xmlns:hns1="' . WSSE_NS . '" SOAP-ENV:mustUnderstand="1">
+    <hns1:UsernameToken>
+        <hns1:Username>' . $username . '</hns1:Username>
+        <hns1:Password>' . $password . '</hns1:Password>
+    </hns1:UsernameToken>
+</hns1:Security>';
 
-$security = new SoapVar($header_xml, XSD_ANYXML);
-$client->__setSoapHeaders(new SoapHeader(WSSE_NS, 'Security', $security, 1));
+$client_info_xml = '
+<hns2:ClientInfoHeader xmlns:hns2="' . RIGHTNOW_NS . '" SOAP-ENV:mustUnderstand="0">
+    <hns2:AppID>' . APP_ID . '</hns2:AppID>
+</hns2:ClientInfoHeader>';
+
+$client->__setSoapHeaders(array(
+    new SoapHeader(WSSE_NS, 'Security', new SoapVar($security_xml, XSD_ANYXML), true),
+    new SoapHeader(WSSE_NS, 'ClientInfoHeader', new SoapVar($client_info_xml, XSD_ANYXML), false)
+));
 
 while (true) {
     printf("\n");
