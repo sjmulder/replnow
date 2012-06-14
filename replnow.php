@@ -6,6 +6,7 @@ class DebugSoapClient extends SoapClient
     function __doRequest($request, $location, $action, $version, $one_way = null)
     {
         if ($one_way === null) $one_way = 1;
+        printf("\nRequest:\n");
         print_r($request);
         return parent::__doRequest($request, $location, $action, $version, $one_way);
     }
@@ -124,9 +125,10 @@ while (true) {
 
     try {
         $result = $client->QueryCSV(new QueryMsg($cmd));
+        printf("\nResult:\n");
         print_r($result);
     } catch (SoapFault $e) {
-        print_r($e);
+        printf("\nError:\n");
         print_r($client->__getLastResponse());
     }
 }
