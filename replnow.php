@@ -88,7 +88,7 @@ while (empty($interface)) $interface = readline('interface: ');
 while (empty($username))  $username  = readline('username:  ');
 
 if (function_exists('ncurses_noecho')) ncurses_noecho();
-while (empty($password)) $password  = readline('password:  ');
+while (empty($password))  $password  = readline('password:  ');
 if (function_exists('ncurses_echo')) ncurses_echo();
 
 $wsdl_url = sprintf(WSDL_FORMAT, urlencode($host), urlencode($interface));
