@@ -1,6 +1,8 @@
 #!/usr/bin/php
 <?php
 
+# © 2012 Sijmen Mulder, licenced under the 3-clause BSD licence. See Licence.md.
+
 class DebugSoapClient extends SoapClient
 {
     function __doRequest($request, $location, $action, $version, $one_way = null)
