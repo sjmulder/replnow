@@ -191,7 +191,12 @@ while (true) {
             printf("(no rows)\n");
             continue;
         }
-        foreach ($table->Rows->Row as $row) {
+        $rows = $table->Rows->Row;
+        print_r($rows);
+        if (!is_array($rows)) {
+            $rows = array($rows);
+        }
+        foreach ($rows as $row) {
             printf("%s\n", $row);
         }
     }
