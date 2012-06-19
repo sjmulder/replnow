@@ -192,7 +192,6 @@ while (true) {
             continue;
         }
         $rows = $table->Rows->Row;
-        print_r($rows);
         if (!is_array($rows)) {
             $rows = array($rows);
         }
