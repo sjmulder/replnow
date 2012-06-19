@@ -2,7 +2,7 @@
 
 REPLnow is an interactive command line tool for running ROQL queries. ROQL is the query language used by RightNow. 
 
-## Usage:
+## Usage
 
     $ ./replnow.php --help
     A REPL for the RightNow query language
@@ -18,7 +18,7 @@ REPLnow is an interactive command line tool for running ROQL queries. ROQL is th
       -h, --help                           show this help message and exit
       --version                            show the program version and exit    
 
-## Exampe:
+## Exampe
 
     $ ./replnow.php -H example.custhelp.com -i foo
     REPLnow 0.2
