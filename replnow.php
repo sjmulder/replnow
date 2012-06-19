@@ -26,7 +26,7 @@ class QueryMsg
 
 require_once 'Console/CommandLine.php';
 
-define('VERSION',       '0.1');
+define('VERSION',       '0.2');
 define('APP_ID',        'replnow');
 define('DESCRIPTION',   'A REPL for the RightNow query language');
 define('WSDL_FORMAT',   'https://%s/cgi-bin/%s.cfg/services/soap?wsdl=typed');
@@ -70,6 +70,13 @@ $cmdline->addOption('password', array(
     'action'      => 'StoreString'
 ));
 
+$cmdline->addOption('verbose', array(
+    'short_name'  => '-v',
+    'long_name'   => '--verbose',
+    'description' => 'print requests and responses',
+    'action'      => 'StoreTrue'
+));
+
 try {
     $result = $cmdline->parse();
     $options = $result->options;
@@ -84,6 +91,7 @@ $host      = $options['host'];
 $interface = $options['interface'];
 $username  = $options['username'];
 $password  = $options['password'];
+$verbose   = $options['verbose'];
 
 while (empty($host))      $host      = readline('host:      ');
 while (empty($interface)) $interface = readline('interface: ');
@@ -96,7 +104,8 @@ if (function_exists('ncurses_echo')) ncurses_echo();
 $wsdl_url = sprintf(WSDL_FORMAT, urlencode($host), urlencode($interface));
 
 try {
-    $client = new DebugSoapClient($wsdl_url, array('trace' => 1));
+    $clientClass = $verbose ? 'DebugSoapClient' : 'SoapClient';
+    $client = new $clientClass($wsdl_url, array('trace' => 1));
 } catch (SoapFault $e) {
     fprintf(STDERR, $e->getMessage() . "\n");
     exit(1);
@@ -120,9 +129,20 @@ $client->__setSoapHeaders(array(
     new SoapHeader(WSSE_NS, 'ClientInfoHeader', new SoapVar($client_info_xml, XSD_ANYXML), false)
 ));
 
+$skipNewline = false;
 while (true) {
-    printf("\n");
+    if ($skipNewline) {
+        $skipNewline = false;
+    } else {
+        printf("\n");
+    }
+
     $cmd = readline('> ');
+    $cmd = trim($cmd);
+    if (empty($cmd)) {
+        $skipNewline = true;
+        continue;
+    }
     readline_add_history($cmd);
 
     if (in_array($cmd, explode(' ', QUIT_COMMANDS))) {
@@ -132,11 +152,48 @@ while (true) {
 
     try {
         $result = $client->QueryCSV(new QueryMsg($cmd));
+    } catch (SoapFault $e) {
+        if ($verbose) {
+            printf("\nError:\n");
+            print_r($client->__getLastResponse());
+            printf("\n");
+        } else {
+            printf("%s\n", $e->faultstring);
+        }
+        continue;
+    }
+
+    if ($verbose) {
         printf("\nResult:\n");
         print_r($result);
-    } catch (SoapFault $e) {
-        printf("\nError:\n");
-        print_r($client->__getLastResponse());
+    }
+
+    if (!isset($result->CSVTableSet)) {
+        printf("No table set returned.\n");
+        continue;
+    }
+    $tableSet = $result->CSVTableSet;
+    if (empty($tableSet->CSVTables)) {
+        printf("No tables returned.\n");
+        continue;
+    }
+
+    $tables = $tableSet->CSVTables;
+    $firstTable = true;
+    foreach ($tables as $table) {
+        printf("\n[%s]\n", $table->Name);
+        if (empty($table->Columns)) {
+            printf("(no columns)\n");
+            continue;
+        }
+        printf("%s\n", $table->Columns);
+        if (empty($table->Rows->Row)) {
+            printf("(no rows)\n");
+            continue;
+        }
+        foreach ($table->Rows->Row as $row) {
+            printf("%s\n", $row);
+        }
     }
 }
 
